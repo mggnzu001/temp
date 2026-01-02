@@ -395,7 +395,7 @@ where
         for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a>: Into<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db>>,
         for<'a> <<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a> as NetabaseModelBlobKey<'a, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem: Into<<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db> as NetabaseModelBlobKey<'db, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem>,
     {
-        self.create_redb(model)
+        self.create_redb::<M>(model)
     }
 
     /// Read a model by its primary key.
@@ -409,11 +409,9 @@ where
     /// let txn = store.begin_read()?;
     /// let user: Option<User> = txn.read(&1u64)?;
     /// ```
-    pub fn read<M, K>(&self, key: &K) -> NetabaseResult<Option<M>>
+    pub fn read<M>(&self, key: &<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'db>) -> NetabaseResult<Option<M>>
     where
         M: RedbModelCrud<'db, D> + RedbNetbaseModel<'db, D> + Clone + 'db,
-        K: ?Sized,
-        for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'a>: std::borrow::Borrow<K>,
         for<'a> M::TableV: redb::Value<SelfType<'a> = M>,
         <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'db>: Clone,
         <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Secondary<'db>: Clone,
@@ -438,7 +436,7 @@ where
         for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a>: Into<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db>>,
         for<'a> <<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a> as NetabaseModelBlobKey<'a, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem: Into<<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db> as NetabaseModelBlobKey<'db, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem>,
     {
-        self.read_redb(key)
+        self.read_redb::<M>(key)
     }
 
     /// Update an existing model in the database.
@@ -482,7 +480,7 @@ where
         for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a>: Into<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db>>,
         for<'a> <<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a> as NetabaseModelBlobKey<'a, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem: Into<<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db> as NetabaseModelBlobKey<'db, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem>,
     {
-        self.update_redb(model)
+        self.update_redb::<M>(model)
     }
 
     /// Delete a model by its primary key.
@@ -497,11 +495,9 @@ where
     /// txn.delete::<User>(&1u64)?;
     /// txn.commit()?;
     /// ```
-    pub fn delete<M, K>(&self, key: &K) -> NetabaseResult<()>
+    pub fn delete<M>(&self, key: &<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'db>) -> NetabaseResult<()>
     where
         M: RedbModelCrud<'db, D> + RedbNetbaseModel<'db, D> + Clone,
-        K: ?Sized,
-        for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'a>: std::borrow::Borrow<K>,
         for<'a> M::TableV: redb::Value<SelfType<'a> = M>,
         <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Primary<'db>: Clone,
         <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Secondary<'db>: Clone,
@@ -526,7 +522,7 @@ where
         for<'a> <<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a>: Into<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db>>,
         for<'a> <<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'a> as NetabaseModelBlobKey<'a, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem: Into<<<<M as NetabaseModel<D>>::Keys as NetabaseModelKeys<D, M>>::Blob<'db> as NetabaseModelBlobKey<'db, D, M, <M as NetabaseModel<D>>::Keys>>::BlobItem>,
     {
-        self.delete_redb(key)
+        self.delete_redb::<M>(key)
     }
 
     /// Read all models of a given type.
@@ -775,40 +771,35 @@ where
     type ReadTransaction = NetabaseRedbReadTransaction<'db, D>;
     type WriteTransaction = NetabaseRedbWriteTransaction<'db, D>;
 
-    fn create(&self, definition: &D) -> NetabaseResult<()> {
-        todo!("NBTransaction::create - convert D to specific model M, call create_redb")
+    fn create(&self, _definition: &D) -> NetabaseResult<()> {
+        Err(NetabaseError::Other)
     }
 
-    fn read(&self, key: &D::DefKeys) -> NetabaseResult<Option<D>> {
-        todo!(
-            "NBTransaction::read - extract primary key from DefKeys, call read_redb, convert back to D"
-        )
+    fn read(&self, _key: &D::DefKeys) -> NetabaseResult<Option<D>> {
+        Err(NetabaseError::Other)
     }
 
-    fn update(&self, definition: &D) -> NetabaseResult<()> {
-        todo!("NBTransaction::update - convert D to specific model M, call update_redb")
+    fn update(&self, _definition: &D) -> NetabaseResult<()> {
+        Err(NetabaseError::Other)
     }
 
-    fn delete(&self, key: &D::DefKeys) -> NetabaseResult<()> {
-        todo!("NBTransaction::delete - extract primary key from DefKeys, call delete_redb")
+    fn delete(&self, _key: &D::DefKeys) -> NetabaseResult<()> {
+        Err(NetabaseError::Other)
     }
 
-    fn create_many(&self, definitions: &[D]) -> NetabaseResult<()> {
-        for definition in definitions {
-            self.create(definition)?;
-        }
-        Ok(())
+    fn create_many(&self, _definitions: &[D]) -> NetabaseResult<()> {
+        Err(NetabaseError::Other)
     }
 
     fn read_if<F>(&self, _predicate: F) -> NetabaseResult<Vec<D>>
     where
         F: Fn(&D) -> bool,
     {
-        todo!("NBTransaction::read_if")
+        Err(NetabaseError::Other)
     }
 
     fn read_range(&self, _range: std::ops::Range<D::DefKeys>) -> NetabaseResult<Vec<D>> {
-        todo!("NBTransaction::read_range")
+        Err(NetabaseError::Other)
     }
 
     fn update_range<F>(
@@ -819,7 +810,7 @@ where
     where
         F: Fn(&mut D),
     {
-        todo!("NBTransaction::update_range")
+        Err(NetabaseError::Other)
     }
 
     fn update_if<P, U>(&self, _predicate: P, _updater: U) -> NetabaseResult<()>
@@ -827,25 +818,22 @@ where
         P: Fn(&D) -> bool,
         U: Fn(&mut D),
     {
-        todo!("NBTransaction::update_if")
+        Err(NetabaseError::Other)
     }
 
-    fn delete_many(&self, keys: &[D::DefKeys]) -> NetabaseResult<()> {
-        for key in keys {
-            self.delete(key)?;
-        }
-        Ok(())
+    fn delete_many(&self, _keys: &[D::DefKeys]) -> NetabaseResult<()> {
+        Err(NetabaseError::Other)
     }
 
     fn delete_if<F>(&self, _predicate: F) -> NetabaseResult<()>
     where
         F: Fn(&D) -> bool,
     {
-        todo!("NBTransaction::delete_if")
+        Err(NetabaseError::Other)
     }
 
     fn delete_range(&self, _range: std::ops::Range<D::DefKeys>) -> NetabaseResult<()> {
-        todo!("NBTransaction::delete_range")
+        Err(NetabaseError::Other)
     }
 
     fn write<F, R>(&self, f: F) -> NetabaseResult<R>
@@ -873,7 +861,7 @@ where
         OD: NetabaseDefinition,
         <OD as strum::IntoDiscriminant>::Discriminant: 'static + std::fmt::Debug,
     {
-        todo!("NBTransaction::read_related")
+        Err(NetabaseError::Other)
     }
 
     fn can_access_definition<OD>(&self) -> bool
