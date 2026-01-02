@@ -32,6 +32,37 @@ where
         transaction::RedbTransaction::new(&self.db)
     }
 
+    /// Begin a write transaction.
+    ///
+    /// Write transactions allow creating, updating, and deleting records.
+    /// Changes must be explicitly committed using `commit()` to persist them.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let txn = store.begin_write()?;
+    /// txn.create(&user)?;
+    /// txn.commit()?;
+    /// ```
+    pub fn begin_write(&self) -> NetabaseResult<transaction::RedbTransaction<'_, D>> {
+        transaction::RedbTransaction::new_write(&self.db)
+    }
+
+    /// Begin a read-only transaction.
+    ///
+    /// Read transactions provide a consistent snapshot view of the database
+    /// and allow querying records without modifying them.
+    ///
+    /// # Example
+    ///
+    /// ```rust,ignore
+    /// let txn = store.begin_read()?;
+    /// let user = txn.read::<User>(&1u64)?;
+    /// ```
+    pub fn begin_read(&self) -> NetabaseResult<transaction::RedbTransaction<'_, D>> {
+        transaction::RedbTransaction::new_read(&self.db)
+    }
+
     /// Get the current compiled schema.
     pub fn compiled_schema(&self) -> DefinitionSchema {
         D::schema()
